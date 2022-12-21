@@ -17,14 +17,31 @@ const io = new SocketServer(server,{
 app.use(cors())
 app.use(morgan("dev"))
 
+const keyDefined = "asdasfa9wa90"
+io.use((socket,next)=>{
+    let keyFrontend = socket.handshake.query.key
+
+    
+    if(keyFrontend !== keyDefined){
+        console.log("Error al conectar")
+        next(new Error("Invalid"));
+        console.log("errooor")
+    }else{
+        next();
+    }
+});
 io.on('connection',(socket)=>{
-    console.log(socket.id)
+    socket.emit("status","connected")
 
     socket.on('message', (message) =>{
         socket.broadcast.emit('message',{
             body: message.body,
             from: message.from
         })
+    })
+
+    socket.on('disconnect',()=>{
+        console.log('disconnect')
     })
 })
 
