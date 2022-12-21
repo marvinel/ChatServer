@@ -34,13 +34,20 @@ io.on('connection',(socket)=>{
     socket.emit("status","connected")
 
     socket.on('message', (message) =>{
+        console.log("hola")
         socket.broadcast.emit('message',{
             body: message.body,
             from: message.from
         })
     })
 
-    socket.on('disconnect',()=>{
+    socket.on("joined",(data)=>{
+        //socket.broadcast.emit('joined', data)
+        socket.join('default');
+        socket.to('default').emit('joined',(data));
+    })
+
+    socket.on('disconnect',(data)=>{
         console.log('disconnect')
     })
 })
