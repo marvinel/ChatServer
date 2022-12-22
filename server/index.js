@@ -18,6 +18,7 @@ app.use(cors())
 app.use(morgan("dev"))
 
 const keyDefined = "asdasfa9wa90"
+let Names = new Map();
 io.use((socket,next)=>{
     let keyFrontend = socket.handshake.query.key
 
@@ -25,7 +26,7 @@ io.use((socket,next)=>{
     if(keyFrontend !== keyDefined){
         console.log("Error al conectar")
         next(new Error("Invalid"));
-        console.log("errooor")
+       
     }else{
         next();
     }
@@ -34,21 +35,34 @@ io.on('connection',(socket)=>{
     socket.emit("status","connected")
 
     socket.on('message', (message) =>{
-        console.log("hola")
-        socket.broadcast.emit('message',{
+
+        socket.to(message.room).emit('message',({
             body: message.body,
-            from: message.from
-        })
+            from: Names.get(socket.id)
+        }));
     })
 
     socket.on("joined",(data)=>{
         //socket.broadcast.emit('joined', data)
-        socket.join('default');
-        socket.to('default').emit('joined',(data));
+        if(!Names.has(socket.id)){
+            Names.set(socket.id, data);
+        }
+       
+       
     })
 
+    socket.on("createroom",(data)=>{      
+       
+        socket.join(data);     
+    })
+
+    socket.on("joinroom",(data)=>{
+        socket.join(data);
+       
+       
+    })
     socket.on('disconnect',(data)=>{
-        console.log('disconnect')
+       // console.log('disconnect')
     })
 })
 
